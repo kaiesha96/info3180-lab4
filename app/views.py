@@ -36,13 +36,12 @@ def upload():
         
     # Instantiate your form class
     form = UploadForm()
-    if request.method == "POST": # and form.validate_on_submit():
-        # Validate file upload on submit
-        #if form.validate_on_submit():
+    if request.method == "POST": 
+    # Validate file upload on submit
+    #if form.validate_on_submit():
             
         f = request.files['file']
-            #filename = secure_filename(f.filename)
-            #f = form.upload.data
+        
         filename = secure_filename(f.filename)
         f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         flash('File Saved', 'success')
