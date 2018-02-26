@@ -6,8 +6,10 @@ This file creates your application.
 """
 import os
 from app import app
-from flask import render_template, request, redirect, url_for, flash, session, abort
-from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from flask import render_template, request, redirect, url_for, flash, session, abort, send_from_directory
+from werkzeug import secure_filename
 from forms import UploadForm
 
 
@@ -26,30 +28,55 @@ def about():
     """Render the website's about page."""
     return render_template('about.html', name="Mary Jane")
 
-
+filefolder = app.config['UPLOAD_FOLDER']
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
     if not session.get('logged_in'):
         abort(401)
         
-    file_folder = app.config['UPLOAD_FOLDER']
-
     # Instantiate your form class
     form = UploadForm()
-
-    # Validate file upload on submit
-    if request.method == 'GET':
-        if form.validate_on_submit():
-            file = form.photo.data
-            filename = secure_filename(file.filename)
-        # Get file data and save to your uploads folder
-            file.save(os.path.join(file_folder, filename))
-
-            flash('File Saved', 'success')
-            return redirect(url_for('home'))
-
+    if request.method == "POST": # and form.validate_on_submit():
+        # Validate file upload on submit
+        #if form.validate_on_submit():
+            
+        f = request.files['file']
+            #filename = secure_filename(f.filename)
+            #f = form.upload.data
+        filename = secure_filename(f.filename)
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        flash('File Saved', 'success')
+        return redirect(url_for('home'))
+    
+    flash('File Not Supported !', 'error')
     return render_template('upload.html',form=form)
 
+
+def get_uploaded_images():
+    image_names = os.listdir('./app/static/uploads')
+    # rootdir = '.'
+    # imgs = []
+    # for subdir, dirs, files in os.walk(rootdir + '/app/static/uploads'):
+    #     for file in files:
+    #         imgs = imgs + [os.path.join(subdir,file)]
+    #         print (imgs)
+    return image_names
+             
+    
+    
+@app.route('/upload/<filename>')
+def send_image(filename):
+    return send_from_directory("images", filename)
+    
+@app.route('/files', methods=['POST','GET'])
+def files():
+    if not session.get('logged_in'):
+        abort(401)
+    
+    # image_names = os.listdir('./app/static/uploads')
+    image_names = get_uploaded_images()
+    #print(image_names)
+    return render_template("files.html", image_names=image_names)
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
