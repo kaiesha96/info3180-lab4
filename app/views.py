@@ -29,6 +29,7 @@ def about():
     return render_template('about.html', name="Mary Jane")
 
 filefolder = app.config['UPLOAD_FOLDER']
+
 @app.route('/upload', methods=['POST', 'GET'])
 def upload():
     if not session.get('logged_in'):
@@ -39,6 +40,11 @@ def upload():
     if request.method == "POST": 
     # Validate file upload on submit
     #if form.validate_on_submit():
+        target = os.path.join('./app/static','uploads/')
+        print (target)
+        
+        if not os.path.isdir(target):
+            os.mkdir(target)
             
         f = request.files['file']
         
@@ -47,7 +53,7 @@ def upload():
         flash('File Saved', 'success')
         return redirect(url_for('home'))
     
-    flash('File Not Supported !', 'error')
+    # flash('File Not Supported !', 'error')
     return render_template('upload.html',form=form)
 
 
